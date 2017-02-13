@@ -153,3 +153,7 @@ void *RepositDatafromCar(void *arg) {
 
 	pthread_exit(NULL);
 }
+
+
+
+//aaaaaaaaaaaaaa
