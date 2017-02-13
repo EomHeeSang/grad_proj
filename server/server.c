@@ -154,6 +154,10 @@ void *RepositDatafromCar(void *arg) {
 	pthread_exit(NULL);
 }
 
+<<<<<<< HEAD
 
 
 //aaaaaaaaaaaaaa
+=======
+//hahaha
+>>>>>>> origin/master
