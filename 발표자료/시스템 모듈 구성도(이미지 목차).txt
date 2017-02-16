@@ -1,0 +1,7 @@
+*log volume manager
+기능
+다루는 정보
+로깅에 기록할 정보
+로깅 정보는 system volume에 반영하는 시점
+
+자료구조 명시 및 간략한 설명
