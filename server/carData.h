@@ -17,7 +17,8 @@ typedef struct carDATA {
 	int distance;
 	int emergency;
 	char direction;
-	char time[255];
+	time_t cur_time;
+	time_t wait_time;
 }carData;
 
 #endif

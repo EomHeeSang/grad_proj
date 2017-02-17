@@ -1,19 +1,13 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <time.h>
 #include <pthread.h>
-#include "carData.h"
+#include "webServer.h"
 #include "/usr/include/mysql/mysql.h"
-
-//network define
-#define PORT 4004
-#define BUFFSIZE 5000
 
 //DB define
 #define DB_HOST "127.0.0.1"
@@ -22,18 +16,48 @@
 #define DB_NAME "s_DB"
 #define CHOP(x) x[strlen(x) -1] = ' '
 
+carData *cData;
+char buf[1000];
 
 //DB var
 MYSQL *connection = NULL, conn;
 
-void *RepositDatafromCar(void *);
-int insert_tCAR();
+void *RepositDatafromCar(void *arg);
 void MeasureDemand();
 
-int main()
+int main(int argc, char *argv[])
 {
-	//var threads
-	pthread_t thid_recv;
+	struct sockaddr_in ServAddr;
+	unsigned short ServPort;
+	int servSock;
+	pthread_t tid;
+	int s_option;
+	
+	if (argc != 2) {
+		/*fprintf(stderr, "Usage: %s <Server Port>\n", argv[0]);
+		exit(1);*/
+		ServPort = 4000;
+	}
+	else
+		ServPort = atoi(argv[1]);
+	
+	//create sock
+	if((servSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+		puts("socket() failed");
+	s_option = 1;
+	setsockopt(servSock, SOL_SOCKET, SO_REUSEADDR, &s_option, sizeof(s_option));
+
+	memset(&ServAddr, 0, sizeof(ServAddr));
+	
+	ServAddr.sin_family = AF_INET;
+	ServAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	ServAddr.sin_port = htons(ServPort);
+	
+	if(bind(servSock, (struct sockaddr *) &ServAddr, sizeof(ServAddr)) < 0)
+		puts("bind failed");
+
+	if(listen(servSock, 3) < 0)
+		puts("listen failed");
 
 	//DB connect
 	mysql_init(&conn);
@@ -41,8 +65,8 @@ int main()
 
 	//clntLen = sizeof(struct sockaddr_in);
 
-	if (pthread_create(&thid_recv, NULL, RepositDatafromCar, NULL) < 0) {
-		perror("thread create error\n");
+	if (pthread_create(&tid, NULL, RepositDatafromCar, (void *)&servSock) < 0) {
+		perror("thread create error");
 		exit(1);
 	}
 
@@ -64,59 +88,52 @@ int main()
 			number_cars++;
 		}
 		demand = number_cars + avg_speed;
-		printf("demand: %d\n", demand);
 	}
 	while(1) {
 		sleep(10);
 
 	}
 
+
 	return 0;
 }
 
-void *RepositDatafromCar(void *p) {
-	//var network
-	struct sockaddr_in servAddr, clntAddr;
+void *RepositDatafromCar(void *arg) {
+	struct sockaddr_in ClntAddr;
 	unsigned int clntLen;
-	char buf[BUFFSIZE];
-	int servSock;
-	int clntSock;
+	int servSock = *(int *)arg;
+	int clntSock = 0;
 	int end;
 
 	//DB var
-	carData *cData;
 	int query_stat;
 	char query[255];
 
-	//create sock
-	if ((servSock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-		puts("socket() failed");
+	clntLen = sizeof(ClntAddr);
 
-	//init servAddr & set servAddr
-	memset(&servAddr, 0, sizeof(servAddr));
-	servAddr.sin_family = AF_INET;
-	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servAddr.sin_port = htons(PORT);
-	if (bind(servSock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
-		puts("bind failed");
-	clntLen = sizeof(clntAddr);
+	while (1) {
+		clntSock = accept(servSock, (struct sockaddr *)&ClntAddr, &clntLen);
+		printf("accept client %s\n", inet_ntoa(ClntAddr.sin_addr));
+		if (clntSock != 0) {
+			break;
+		}
+	}
 
 	while (1) {
 
-		if ((end = recvfrom(servSock, buf, BUFFSIZE - 1, 0, (struct sockaddr*)&clntAddr, &clntLen)) < 0)
-			printf("recvfrom failed\n");
+		end = recv(clntSock, buf, sizeof(buf), 0);
 		buf[end] = '\0';
 		cData = (carData *)buf;
 
 		if (buf[0] != '\0') {
 			//data from car -> DB
-			sprintf(query, "INSERT INTO CAR VALUES (NULL, %d, %d, %d, %d, %d, %ld, %d, %d, '%c')",
-				cData->id, cData->lane_num, cData->curX, cData->curY, cData->speed, cData->cur_time,
+			sprintf(query, "INSERT INTO CAR VALUES (NULL, %d, %d, %d, %d, %d, '%s', %d, %d, '%c')",
+				cData->id, cData->lane_num, cData->curX, cData->curY, cData->speed, cData->time,
 				cData->distance, cData->emergency, cData->direction);
 			query_stat = mysql_query(connection, query);
 			if (query_stat != 0)
 			{
-				fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+				fprintf(stderr, "Mysql query error : %s", mysql_error(&conn));
 			}
 
 			printf("id : %d\n", cData->id);
@@ -127,7 +144,7 @@ void *RepositDatafromCar(void *p) {
 			printf("distance : %d\n", cData->distance);
 			printf("emergency : %d\n", cData->emergency);
 			printf("direction : %c\n", cData->direction);
-			printf("cur_time: %ld\n", cData->cur_time);
+			printf("time : %s\n", cData->time);
 			buf[0] = '\0';
 
 		}
@@ -137,6 +154,10 @@ void *RepositDatafromCar(void *p) {
 	pthread_exit(NULL);
 }
 
-int insert_tCAR(carData cData) {
+<<<<<<< HEAD
 
-}
+
+//aaaaaaaaaaaaaa
+=======
+//hahaha
+>>>>>>> origin/master

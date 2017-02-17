@@ -9,10 +9,6 @@
 #include <termios.h>
 #include "carData.h"
 
-//network define
-#define PORT 4004
-#define BUFFSIZE 5000
-
 int getch() {
         int ch;
         struct termios buf;
@@ -32,30 +28,40 @@ int getch() {
 
 int main(int argc, char *argv[])
 {
-	//var network
-	int clntSock;
-	struct sockaddr_in servAddr;
+	int sock;	
+	struct sockaddr_in ServAddr;
+	unsigned short ServPort;
 	char *servIP;
-	//var test
-	int chkEnter;
+	int buf_size;
+	time_t tim;
+	char *t;
+	int chr;
 
-	if (argc != 2) {
+	if (argc != 3) {
 		/*fprintf(stderr, "Usage : %s <Server IP> <Port> \n", argv[0]);
 		exit(1);*/
 		servIP = "127.0.0.1";
+		ServPort = 4000;
 	}
 	else {
 		servIP = argv[1];
+		ServPort = atoi(argv[2]);
 	}
 
-	if ((clntSock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 		puts("socket Failed\n");
 
-	//servAddr init & set
-	memset(&servAddr, 0, sizeof(servAddr));
-	servAddr.sin_family = AF_INET;
-	servAddr.sin_addr.s_addr = inet_addr(servIP);
-	servAddr.sin_port = htons(PORT);
+	memset(&ServAddr, 0, sizeof(ServAddr));
+	ServAddr.sin_family = AF_INET;
+	ServAddr.sin_addr.s_addr = inet_addr(servIP);
+	ServAddr.sin_port = htons(ServPort);
+
+	if (connect(sock, (struct sockaddr *)&ServAddr, sizeof(ServAddr)) < 0) {
+		puts("connect Failed\n");
+		return 0;
+	}
+
+	time(&tim);
 
 	carData cData;
 	
@@ -67,17 +73,23 @@ int main(int argc, char *argv[])
 	cData.distance = 20;
 	cData.emergency = EMERGENCY;
 	cData.direction = 'l';
-	cData.cur_time = time((time_t *)0);
+
+	t = malloc(sizeof(char)*100);
+	strcpy(t, ctime(&tim));
+	sprintf(cData.time, "%s", t);
+
+	buf_size = sizeof(int)*20 + 1;
+	
+	printf("time : %s\n", cData.time);
 
 	while(1) {
 		puts("press enter key");
-		chkEnter = getch();
+		chr = getch();
 
-		if (chkEnter == 10)
-			if (sendto(clntSock, (char *)&cData, sizeof(carData), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(carData))
-				printf("sendto failed");
+		if(chr == 10)
+		send(sock, (char *)&cData, buf_size,0);
 		
-		chkEnter = 0;
+		chr = 0;
 	}
 
 	return 0;
