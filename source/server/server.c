@@ -93,6 +93,7 @@ void *recv_rData(void *p) {
 		buf[end] = '\0';
 		
 		if (buf[0] != '\0') {
+			
 			insert_rData(buf);
 			printf("id : %d\n", cData->id);
 			printf("lane_num : %d\n", cData->lane_num);
@@ -180,7 +181,7 @@ int* measure_confusion(MYSQL_RES *sql_res) {
 
 void insert_rData(char *buff) {
 	//DB var
-	carData *cData;
+	carData *cData = (carData *)buff;
 	int query_stat;
 	char query[255];
 
