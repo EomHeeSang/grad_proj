@@ -8,11 +8,18 @@
 #define RUSH 1
 #define EMERGENCY 2
 
+// 신호등
+typedef struct signal {
+	int sig_num;			// 신호등 번호
+	int sig_value;			// 신호값 (직진, 좌회전)
+}signal;
+
 // 차량들의 신호 요구 + 컨트롤러 id. 서버로 전송
 typedef struct sigSt {
 	int id;					// 컨트롤러가 위치한 교차로 고유 id
 	carData *Car;			// 차량의 raw 데이터
-	signal gSig;			// 차량 gps값을 통해 확인된 요구 신호등 번호
+	signal *gSig;			// 차량 gps값을 통해 확인된 요구 신호등 번호
+	//++현재 차량과 정지선과의 거리
 }sigSt;
 
 // 차량 및 서버에게 신호 정보 전달
@@ -23,11 +30,6 @@ typedef struct sigInfo {
 	int n_stime;			// 다음 신호의 유지 시간
 }sigInfo;
 
-// 신호등
-typedef struct signal {
-	int sig_num;			// 신호등 번호
-	int sig_value;			// 신호값 (직진, 좌회전)
-}signal;
 
 // 신호 요구치. 서버에서 수신
 typedef struct sigDemand {

@@ -13,43 +13,20 @@
 
 //network define
 #define DATAPORT 4004
-#define REQUESTPORT 4005
+#define REQUESTPORT 5005
+#define SERVERDATAPORT 5004
 #define BUFFSIZE 5000
 #define IPSERVER "127.0.0.1"
 #define IDCTLR 366
 
 void *recv_rData(void *);
-void send_rData();
+void send_CtData(char *);
 
 char sh_b_send = 0;
 char sh_buff[BUFFSIZE];
 
-
-int getch() {
-	int ch;
-	struct termios buf;
-	struct termios save;
-
-	tcgetattr(0, &save);
-	buf = save;
-	buf.c_lflag &= ~(ICANON | ECHO);
-	buf.c_cc[VMIN] = 1;
-	buf.c_cc[VTIME] = 0;
-	tcsetattr(0, TCSAFLUSH, &buf);
-	ch = getchar();
-	tcsetattr(0, TCSAFLUSH, &save);
-
-	return ch;
-}
-
-int main(int argc, char *argv[])
-{
-	//var network
-	int clntSock;
-	struct sockaddr_in servAddr;
-	char *servIP;
-	//var test
-	int chkEnter;
+int main(int argc, char *argv[]){
+	char* servIP;
 
 	if (argc != 2) {
 		/*fprintf(stderr, "Usage : %s <Server IP> <Port> \n", argv[0]);
@@ -60,31 +37,20 @@ int main(int argc, char *argv[])
 		servIP = argv[1];
 	}
 
-	if ((clntSock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-		puts("socket Failed\n");
-
 	pthread_t thID_recvrData;
+	//pthread_t thID_sendCtlrData;
 
 	if (pthread_create(&thID_recvrData, NULL, recv_rData, NULL) < 0) {
 		perror("create error: thread for reciving raw data\n");
 		exit(1);
 	}
-
-	//servAddr init & set
-	memset(&servAddr, 0, sizeof(servAddr));
-	servAddr.sin_family = AF_INET;
-	servAddr.sin_addr.s_addr = inet_addr(servIP);
-	servAddr.sin_port = htons(DATAPORT);
+	/*if (pthread_create(&thID_sendCtlrData, NULL, send_CtData, NULL) < 0) {
+		perror("create error: thread for sending data\n");
+		exit(1);
+	}*/
 
 	while (1) {
-		puts("press enter key");
-		chkEnter = getch();
-
-		if (chkEnter == 10)
-			if (sendto(clntSock, (char *)&cData, sizeof(carData), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(carData))
-				printf("sendto failed");
-
-		chkEnter = 0;
+		sleep(10);
 	}
 
 	return 0;
@@ -118,9 +84,10 @@ void *recv_rData(void *p) {
 		buf[end] = '\0';
 
 		if (buf[0] != '\0') {
-			memcpy(sh_buff, buf, BUFFSIZE);
-			sh_b_send = 1;
-
+			send_CtData(buf);
+			//memcpy(sh_buff, buf, BUFFSIZE);
+			//sh_b_send = 1;
+			printf("data arrived\n");
 			buf[0] = '\0';
 		}
 		usleep(10);
@@ -129,32 +96,62 @@ void *recv_rData(void *p) {
 	pthread_exit(NULL);
 }
 
-void *send_rData() {
+void send_CtData(char *buff) {
+	//var data
+	sigSt st_sig;
 	//var network
-	int sock_sendrData;
+	static int sock_sendrData;
+	struct sockaddr_in servAddr;
+
+	if (servAddr.sin_addr.s_addr != inet_addr(IPSERVER)) {
+
+		if ((sock_sendrData = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+			puts("socket Failed\n");
+
+		//servAddr init & set
+		memset(&servAddr, 0, sizeof(servAddr));
+		servAddr.sin_family = AF_INET;
+		servAddr.sin_addr.s_addr = inet_addr(IPSERVER);
+		servAddr.sin_port = htons(SERVERDATAPORT);
+	}
+
+	//car data + signal data
+	st_sig.Car = (carData *)buff;
+	st_sig.id = IDCTLR;
+	//sig_num 판별 함수
+	st_sig.gSig = (signal *)malloc(sizeof(signal));
+	st_sig.gSig->sig_num = 1;
+	st_sig.gSig->sig_value = 2;
+			
+	if (sendto(sock_sendrData, (char *)&st_sig, sizeof(sigSt), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(sigSt))
+		printf("sendto failed");	
+}
+
+void *send_Request() {
+	//var network
+	int sock_sendReq;
 	struct sockaddr_in servAddr;
 	//var data
-	sigSt data;
+	char *request ="0";
 
-	if ((sock_sendrData = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	if ((sock_sendReq = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		puts("socket Failed\n");
-	
+
 	//servAddr init & set
 	memset(&servAddr, 0, sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = inet_addr(IPSERVER);
-	servAddr.sin_port = htons(DATAPORT);
+	servAddr.sin_port = htons(REQUESTPORT);
 
 	while (1) {
 		if (sh_b_send == 1) {
-			data.Car = (carData *)sh_buff;
-			data.id = IDCTLR;
-			//sig_num 판별 함수
-			
-			if (sendto(sock_sendrData, (char *)&cData, sizeof(carData), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(carData))
+			if (sendto(sock_sendReq, (char *)request, sizeof(sigSt), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(sigSt))
 				printf("sendto failed");
-		} else {
 
 		}
+		else {
+
+		}
+		usleep(50);
 	}
 }

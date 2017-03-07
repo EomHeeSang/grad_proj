@@ -7,7 +7,7 @@
 #include <time.h>
 #include <term.h>
 #include <termios.h>
-#include "carData.h"
+#include "../carData.h"
 
 //network define
 #define PORT 4004
@@ -66,7 +66,8 @@ int main(int argc, char *argv[])
 	cData.speed = 80;
 	cData.distance = 20;
 	cData.emergency = EMERGENCY;
-	cData.direction = 'l';
+	memset(cData.direction, 0, 3);
+	cData.direction[0] = 'l';
 	cData.cur_time = time((time_t *)0);
 
 	while(1) {
