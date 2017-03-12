@@ -172,19 +172,19 @@ int* measure_confusion(MYSQL_RES *sql_res) {
 	printf("demand: %d\n", demand);
 }
 
-
 void insert_rData(char *buff) {
 	//DB var
 	sigSt *sData = (sigSt *)buff;
-	sData->Car = (carData *)(buff + sizeof(int));
-	sData->gSig = (signal *)(buff + sizeof(int) + sizeof(carData));
+	signal *sgData = (signal *)(buff + sizeof(int));
+	carData *cData = (carData *)(buff + sizeof(int) + sizeof(carData));
 	int query_stat;
 	char query[255];
 
 	printf("data check\n");
 	printf("%d\n", sData->id);
-	printf("%d\n", sData->Car->id);
-	printf("%d\n", sData->gSig->sig_num);
+	printf("%d\n", cData->id);
+	printf("%d\n", cData->speed);
+	printf("%d\n", sgData->sig_num);
 	//data from car -> DB
 	/*sprintf(query, "INSERT INTO CAR VALUES (NULL, %d, %d, %d, %d, %d, %ld, %d, %d, '%c')",
 		cData->id, cData->lane_num, cData->curX, cData->curY, cData->speed, cData->cur_time,

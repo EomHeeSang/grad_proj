@@ -96,15 +96,17 @@ void *recv_rData(void *p) {
 	pthread_exit(NULL);
 }
 
-void send_CtData(char *buff) {
+void send_CtData(char *buf) {
 	//var data
 	sigSt st_sig;
+	carData *temp_cardata;
+	char buff[BUFFSIZE] = { 0, };
 	//var network
 	static int sock_sendrData;
 	struct sockaddr_in servAddr;
 
+	//if method called first time
 	if (servAddr.sin_addr.s_addr != inet_addr(IPSERVER)) {
-
 		if ((sock_sendrData = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 			puts("socket Failed\n");
 
@@ -116,19 +118,18 @@ void send_CtData(char *buff) {
 	}
 
 	//car data + signal data
-	//st_sig.Car = (carData *)buff;
+	/*temp_cardata = (carData *)buff;
+	st_sig.Car = *temp_cardata;*/
 	st_sig.id = IDCTLR;
-	printf("%d", st_sig.Car.id);
 	//sig_num 판별 함수
-	st_sig.gSig = (signal *)malloc(sizeof(signal));
-	st_sig.gSig->sig_num = 1;
-	st_sig.gSig->sig_value = 2;
-	{
-		char *test = (char *)&st_sig;
-		
-	}
+	st_sig.gSig.sig_num = 1;
+	st_sig.gSig.sig_value = 2;
+
+	strcat(buff, (char *)st_sig.id);
+	strcat(buff, (char *)st_sig.gSig);
+	strcat(buff, buf);
 			
-	if (sendto(sock_sendrData, (char *)&st_sig, sizeof(sigSt), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(sigSt))
+	if (sendto(sock_sendrData, (char *)buff, BUFFSIZE, 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != BUFFSIZE)
 		printf("sendto failed");	
 }
 
