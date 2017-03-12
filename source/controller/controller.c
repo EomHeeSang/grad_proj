@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
@@ -21,12 +22,20 @@
 
 void *recv_rData(void *);
 void send_CtData(char *);
+void makeSigSt(sigSt *);
+void initSignal();
+int gps_mapping(float, float);
 
 char sh_b_send = 0;
 char sh_buff[BUFFSIZE];
 
+signal sig1, sig2, sig3, sig4;
+
 int main(int argc, char *argv[]){
 	char* servIP;
+
+	// 신호등 번호 및 gps 값 초기화
+	initSignal();
 
 	if (argc != 2) {
 		/*fprintf(stderr, "Usage : %s <Server IP> <Port> \n", argv[0]);
@@ -119,6 +128,9 @@ void send_CtData(char *buff) {
 	st_sig.Car = (carData *)buff;
 	st_sig.id = IDCTLR;
 	//sig_num 판별 함수
+	//st_sig 구조체 안의 Car 의 raw data를 받았으므로 Car 의 gps 데이터 기반으로 신호 값을 생성해줄 함수
+	makeSigSt(&st_sig);
+
 	st_sig.gSig = (signal *)malloc(sizeof(signal));
 	st_sig.gSig->sig_num = 1;
 	st_sig.gSig->sig_value = 2;
@@ -155,3 +167,49 @@ void *send_Request() {
 		usleep(50);
 	}
 }
+
+void initSingal(signal *signal) {
+	sig1.sig_num = 1;
+	sig1.latitude = 37.346937;
+	sig1.longtitude = 127.736371;
+
+	sig2.sig_num = 2;
+	sig2.latitude = 37.346868;
+	sig2.longtitude = 126.746831;
+
+	sig3.sig_num = 3;
+	sig3.latitude = 37.346865;
+	sig3.longtitude = 126.736294;
+
+	sig4.sig_num = 4;
+	sig4.latitude = 37.346932;
+	sig4.longtitude = 126.736286;
+}
+
+double GetAngleBetweenTwoVectors(double dVec1X, double dVec1Y, double dVec2X, double dVec2Y) {
+	double dNum = (dVec1X * dVec2X) + (dVec1Y * dVec2Y);
+
+	double dDen = (sqrt(pow(dVec1X, 2) + pow(dVec1Y, 2)) * sqrt(pow(dVec2X, 2) + pow(dVec2Y, 2)));
+
+	double dValue = RAD2DEG(acos((dNum / dDen)));
+
+	return dValue;
+
+}
+
+
+
+
+
+출처: http://neoplanetz.tistory.com/entry/C-두-벡터의-각-구하기Calculate-degree-between-two-vectors [Neoplanetz]
+
+int gps_mapping(float latitude, float longtitude) {
+	int	
+}
+
+void makeSigSt(sigSt *st_sig) {
+	gps_mapping(st_sig->Car.gps.latitude, st_sig->Car.gps.longtitude);
+
+
+}
+
