@@ -17,8 +17,13 @@ typedef struct signal {
 // 차량들의 신호 요구 + 컨트롤러 id. 서버로 전송
 typedef struct sigSt {
 	int id;					// 컨트롤러가 위치한 교차로 고유 id
+<<<<<<< HEAD
 	carData Car;			// 차량의 raw 데이터
 	signal gSig;			// 차량 gps값을 통해 확인된 요구 신호등 번호
+=======
+	signal *gSig;			// 차량 gps값을 통해 확인된 요구 신호등 번호
+	carData *Car;			// 차량의 raw 데이터
+>>>>>>> origin/master
 	//++현재 차량과 정지선과의 거리
 }sigSt;
 

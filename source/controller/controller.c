@@ -125,8 +125,9 @@ void send_CtData(char *buff) {
 	}
 
 	//car data + signal data
-	st_sig.Car = (carData *)buff;
+	//st_sig.Car = (carData *)buff;
 	st_sig.id = IDCTLR;
+	printf("%d", st_sig.Car.id);
 	//sig_num 판별 함수
 	//st_sig 구조체 안의 Car 의 raw data를 받았으므로 Car 의 gps 데이터 기반으로 신호 값을 생성해줄 함수
 	makeSigSt(&st_sig);
@@ -134,6 +135,10 @@ void send_CtData(char *buff) {
 	st_sig.gSig = (signal *)malloc(sizeof(signal));
 	st_sig.gSig->sig_num = 1;
 	st_sig.gSig->sig_value = 2;
+	{
+		char *test = (char *)&st_sig;
+		
+	}
 			
 	if (sendto(sock_sendrData, (char *)&st_sig, sizeof(sigSt), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(sigSt))
 		printf("sendto failed");	
