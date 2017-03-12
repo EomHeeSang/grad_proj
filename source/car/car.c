@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
 	
 	cData.id = 339;
 	cData.lane_num = 2;
-	cData.curX = 100;
-	cData.curY = 200;
+	cData.gps.latitude = 37.346756;
+	cData.gps.longtitude = 126.736206;
 	cData.speed = 80;
 	cData.distance = 20;
 	cData.emergency = EMERGENCY;
