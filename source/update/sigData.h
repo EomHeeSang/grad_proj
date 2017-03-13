@@ -10,8 +10,8 @@
 
 // 신호등
 typedef struct signal {
-	float latitude;
-	float longtitude;
+	float latitude;			// 신호등 위도
+	float longtitude;		// 신호등 경도
 	int sig_num;			// 신호등 번호
 	int sig_value;			// 신호값 (직진, 좌회전)
 }signal;

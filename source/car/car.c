@@ -14,20 +14,20 @@
 #define BUFFSIZE 5000
 
 int getch() {
-        int ch;
-        struct termios buf;
-        struct termios save;
+	int ch;
+	struct termios buf;
+	struct termios save;
 
-        tcgetattr(0, &save);
-        buf = save;
-        buf.c_lflag &= ~(ICANON|ECHO);
-        buf.c_cc[VMIN] = 1;
-        buf.c_cc[VTIME] = 0;
-        tcsetattr(0, TCSAFLUSH, &buf);
-        ch = getchar();
-        tcsetattr(0, TCSAFLUSH, &save);
+	tcgetattr(0, &save);
+	buf = save;
+	buf.c_lflag &= ~(ICANON | ECHO);
+	buf.c_cc[VMIN] = 1;
+	buf.c_cc[VTIME] = 0;
+	tcsetattr(0, TCSAFLUSH, &buf);
+	ch = getchar();
+	tcsetattr(0, TCSAFLUSH, &save);
 
-        return ch;
+	return ch;
 }
 
 int main(int argc, char *argv[])
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	servAddr.sin_port = htons(PORT);
 
 	carData cData;
-	
+
 	cData.id = 339;
 	cData.lane_num = 2;
 	cData.gps.latitude = 37.346756;
@@ -70,14 +70,14 @@ int main(int argc, char *argv[])
 	cData.direction[0] = 'l';
 	cData.cur_time = time((time_t *)0);
 
-	while(1) {
+	while (1) {
 		puts("press enter key");
 		chkEnter = getch();
 
 		if (chkEnter == 10)
 			if (sendto(clntSock, (char *)&cData, sizeof(carData), 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != sizeof(carData))
 				printf("sendto failed");
-		
+
 		chkEnter = 0;
 	}
 

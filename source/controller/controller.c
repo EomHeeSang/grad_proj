@@ -131,14 +131,14 @@ void send_CtData(char *buf) {
 	st_sig.Car = *temp_cardata;*/
 	st_sig.id = IDCTLR;
 	//sig_num 판별 함수
-<<<<<<< HEAD
+
 	st_sig.gSig.sig_num = 1;
 	st_sig.gSig.sig_value = 2;
 
 	strcat(buff, (char *)st_sig.id);
 	strcat(buff, (char *)st_sig.gSig);
 	strcat(buff, buf);
-=======
+\
 	//st_sig 구조체 안의 Car 의 raw data를 받았으므로 Car 의 gps 데이터 기반으로 신호 값을 생성해줄 함수
 	makeSigSt(&st_sig);
 
@@ -149,7 +149,6 @@ void send_CtData(char *buf) {
 		char *test = (char *)&st_sig;
 		
 	}
->>>>>>> origin/master
 			
 	if (sendto(sock_sendrData, (char *)buff, BUFFSIZE, 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != BUFFSIZE)
 		printf("sendto failed");	
@@ -184,6 +183,7 @@ void *send_Request() {
 	}
 }
 
+// 신호등 위,경도 및 번호 초기화
 void initSingal(signal *signal) {
 	sig1.sig_num = 1;
 	sig1.latitude = 37.346937;
@@ -202,30 +202,99 @@ void initSingal(signal *signal) {
 	sig4.longtitude = 126.736286;
 }
 
-double GetAngleBetweenTwoVectors(double dVec1X, double dVec1Y, double dVec2X, double dVec2Y) {
-	double dNum = (dVec1X * dVec2X) + (dVec1Y * dVec2Y);
+float GetAngleBetweenTwoVectors(float Vec1X, float Vec1Y, float Vec2X, float Vec2Y) {
+	float v;
 
-	double dDen = (sqrt(pow(dVec1X, 2) + pow(dVec1Y, 2)) * sqrt(pow(dVec2X, 2) + pow(dVec2Y, 2)));
+	// 먼저 두 벡터를 단위 벡터로 만든다.
+	v = sqrt(Vec1X*Vec1X + Vec1Y*Vec1Y);
+	Vec1X /= v;
+	Vec1Y /= v;
 
-	double dValue = RAD2DEG(acos((dNum / dDen)));
+	v = sqrt(Vec2X*Vec2X + Vec2Y*Vec2Y);
+	Vec2X /= v;
+	Vec2Y /= v;
 
-	return dValue;
+	// 내적하기
+	float theta;
+	float degree;
 
+	theta = Vec1X*Vec2X + Vec2Y*Vec2Y;
+
+	theta = acos(theta);
+
+	degree = theta * (180 / 3.141592);
+
+	return degree;
 }
 
+// gps 매핑
+int gps_mapping(float c_latitude, float c_longtitude) {
+	float CtoI_lat;						// 차에서 교차로 중앙까지의 위도벡터
+	float CtoI_long;					// 차에서 교차로 중앙까지의 경도벡터
+	float ItoS_lat;						// 교차로 중앙에서 신호등까지의 위도벡터
+	float ItoS_long						// 교차로 중앙에서 신호등까지의 경도벡터
+		float i_latitude, i_longtitude;		// 교차로 중앙의 위도, 경도
+	float degree;
+	int sigNum;							// 최종 신호등 번호
 
+										// 교차로 중앙의 위도, 경도 값
+	i_latitude = (sig1.latitude + sig2.latitude + sig3.latitude + sig4.latitude) / 4;
+	i_longtitude = (sig1.longtitude + sig2.longtitude + sig3.longtitude + sig4.longtitude) / 4;
 
+	// 차에서 교차로 중앙까지 위도, 경도 벡터
+	CtoI_lat = i_latitude - c_latitude;
+	CtoI_long = i_longtitude - c_longtitude;
 
+	// 교차로 중앙에서 신호등1 까지의 위도, 경도벡터
+	ItoS_lat = sig1.latitude - i_latitude;
+	ItoS_long = sig1.longtitude - i_longtitude;
 
-출처: http://neoplanetz.tistory.com/entry/C-두-벡터의-각-구하기Calculate-degree-between-two-vectors [Neoplanetz]
+	// 최종 각 도출 (도출과정 - 구조체 배열로 변경 가능)
+	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
 
-int gps_mapping(float latitude, float longtitude) {
-	int	
+	if (degree >= 0 || degree <= 30) {
+		sigNum = 1;
+		return sigNum;
+	}
+
+	// 교차로 중앙에서 신호등2 까지의 위도, 경도벡터
+	ItoS_lat = sig2.latitude - i_latitude;
+	ItoS_long = sig2.longtitude - i_longtitude;
+
+	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
+
+	if (degree >= 0 || degree <= 30) {
+		sigNum = 2;
+		return sigNum;
+	}
+
+	// 교차로 중앙에서 신호등2 까지의 위도, 경도벡터
+	ItoS_lat = sig3.latitude - i_latitude;
+	ItoS_long = sig3.longtitude - i_longtitude;
+
+	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
+
+	if (degree >= 0 || degree <= 30) {
+		sigNum = 3;
+		return sigNum;
+	}
+
+	// 교차로 중앙에서 신호등2 까지의 위도, 경도벡터
+	ItoS_lat = sig4.latitude - i_latitude;
+	ItoS_long = sig4.longtitude - i_longtitude;
+
+	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
+
+	if (degree >= 0 || degree <= 30) {
+		sigNum = 4;
+		return sigNum;
+	}
 }
 
+// 신호값 도출
 void makeSigSt(sigSt *st_sig) {
-	gps_mapping(st_sig->Car.gps.latitude, st_sig->Car.gps.longtitude);
+	st_sig->gSig.sig_num = gps_mapping(st_sig->Car.gps.latitude, st_sig->Car.gps.longtitude);
 
-
+	// sigValue 값 도출 함수 필요 (작성중)
 }
 

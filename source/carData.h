@@ -8,11 +8,13 @@
 #define RUSH 1
 #define EMERGENCY 2
 
+typedef struct gpsInfo {
+	float latitude, longitude;							// 위도 경도
+}gpsInfo;
+
 typedef struct carDATA {
 	int id;
 	int lane_num;
-	int curX;
-	int curY;
 	int speed;
 	int distance;
 	int emergency;
@@ -22,15 +24,10 @@ typedef struct carDATA {
 	char direction[3];
 	//++직전 사거리 통과 후 평균 속도
 	//++차량이 필요한 신호: 앞뒤 차량간 통신으로 대기 신호정보를 교환, 
-	
 
 	time_t cur_time;
 	time_t wait_time;
 }carData;
 
-typedef struct gpsInfo {
-	int year;
-
-}gpsInfo;
 
 #endif
