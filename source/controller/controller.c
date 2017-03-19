@@ -232,8 +232,8 @@ int gps_mapping(float c_latitude, float c_longtitude) {
 	float CtoI_lat;						// 차에서 교차로 중앙까지의 위도벡터
 	float CtoI_long;					// 차에서 교차로 중앙까지의 경도벡터
 	float ItoS_lat;						// 교차로 중앙에서 신호등까지의 위도벡터
-	float ItoS_long						// 교차로 중앙에서 신호등까지의 경도벡터
-		float i_latitude, i_longtitude;		// 교차로 중앙의 위도, 경도
+	float ItoS_long;						// 교차로 중앙에서 신호등까지의 경도벡터
+	float i_latitude, i_longtitude;		// 교차로 중앙의 위도, 경도
 	float degree;
 	int sigNum;							// 최종 신호등 번호
 
