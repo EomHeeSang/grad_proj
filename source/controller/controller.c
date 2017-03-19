@@ -135,16 +135,16 @@ void send_CtData(char *buf) {
 	st_sig.gSig.sig_num = 1;
 	st_sig.gSig.sig_value = 2;
 
-	strcat(buff, (char *)st_sig.id);
-	strcat(buff, (char *)st_sig.gSig);
+	strcat(buff, *(char *)st_sig.id);
+	strcat(buff, *(char *)st_sig.gSig);
 	strcat(buff, buf);
-\
+
 	//st_sig 구조체 안의 Car 의 raw data를 받았으므로 Car 의 gps 데이터 기반으로 신호 값을 생성해줄 함수
 	makeSigSt(&st_sig);
 
-	st_sig.gSig = (signal *)malloc(sizeof(signal));
-	st_sig.gSig->sig_num = 1;
-	st_sig.gSig->sig_value = 2;
+	//st_sig.gSig = (signal *)malloc(sizeof(signal));
+	//st_sig.gSig->sig_num = 1;
+	//st_sig.gSig->sig_value = 2;
 	{
 		char *test = (char *)&st_sig;
 		
@@ -233,7 +233,7 @@ int gps_mapping(float c_latitude, float c_longtitude) {
 	float CtoI_long;					// 차에서 교차로 중앙까지의 경도벡터
 	float ItoS_lat;						// 교차로 중앙에서 신호등까지의 위도벡터
 	float ItoS_long						// 교차로 중앙에서 신호등까지의 경도벡터
-		float i_latitude, i_longtitude;		// 교차로 중앙의 위도, 경도
+	float i_latitude, i_longtitude;		// 교차로 중앙의 위도, 경도
 	float degree;
 	int sigNum;							// 최종 신호등 번호
 
@@ -297,4 +297,3 @@ void makeSigSt(sigSt *st_sig) {
 
 	// sigValue 값 도출 함수 필요 (작성중)
 }
-
