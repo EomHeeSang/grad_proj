@@ -9,7 +9,7 @@
 #define EMERGENCY 2
 
 typedef struct gpsInfo {
-	float latitude, longtitude;							// 위도 경도
+	float latitude, longitude;							// 위도 경도
 }gpsInfo;
 
 typedef struct carDATA {
