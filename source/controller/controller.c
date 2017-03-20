@@ -143,8 +143,8 @@ void send_CtData(char *buf) {
 	makeSigSt(&st_sig);
 
 	st_sig.gSig = (signal *)malloc(sizeof(signal));
-	st_sig.gSig->sig_num = 1;
-	st_sig.gSig->sig_value = 2;
+	st_sig.gSig.sig_num = 1;
+	st_sig.gSig.sig_value = 2;
 	{
 		char *test = (char *)&st_sig;
 		
