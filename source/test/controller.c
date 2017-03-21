@@ -134,15 +134,15 @@ void send_CtData(char *buf) {
 
 	st_sig.gSig.sig_num = 1;
 	st_sig.gSig.sig_value = 2;
-
+	/*
 	strcat(buff, (char *)st_sig.id);
-	strcat(buff, (char *)st_sig.gSig);
+	strcat(buff, &st_sig.gSig);
 	strcat(buff, buf);
-
+	*/
 	//st_sig 구조체 안의 Car 의 raw data를 받았으므로 Car 의 gps 데이터 기반으로 신호 값을 생성해줄 함수
 	makeSigSt(&st_sig);
 
-	st_sig.gSig = (signal *)malloc(sizeof(signal));
+	//st_sig.gSig = (signal *)malloc(sizeof(signal));
 	st_sig.gSig.sig_num = 1;
 	st_sig.gSig.sig_value = 2;
 	{
