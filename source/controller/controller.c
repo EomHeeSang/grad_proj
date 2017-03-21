@@ -184,20 +184,20 @@ void *send_Request() {
 }
 
 // 신호등 위,경도 및 번호 초기화
-void initSingal() {
-	sig1.gps.sig_num = 1;
+void InitSingal() {
+	sig1.sig_num = 1;
 	sig1.gps.latitude = 37.346937;
 	sig1.gps.longtitude = 127.736371;
 
-	sig2.gps.sig_num = 2;
+	sig2.sig_num = 2;
 	sig2.gps.latitude = 37.346868;
 	sig2.gps.longtitude = 126.746831;
 
-	sig3.gps.sig_num = 3;
+	sig3.sig_num = 3;
 	sig3.gps.latitude = 37.346865;
 	sig3.gps.longtitude = 126.736294;
 
-	sig4.gps.sig_num = 4;
+	sig4.sig_num = 4;
 	sig4.gps.latitude = 37.346932;
 	sig4.gps.longtitude = 126.736286;
 }

@@ -12,6 +12,7 @@
 typedef struct signal {
 	int sig_num;			// 신호등 번호
 	int sig_value;			// 신호값 (직진, 좌회전)
+	gpsInfo gps;
 }signal;
 
 // 차량들의 신호 요구 + 컨트롤러 id. 서버로 전송
