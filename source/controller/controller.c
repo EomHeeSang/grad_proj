@@ -184,111 +184,54 @@ void *send_Request() {
 }
 
 // 신호등 위,경도 및 번호 초기화
-void initSingal(signal *signal) {
-	sig1.sig_num = 1;
-	sig1.latitude = 37.346937;
-	sig1.longtitude = 127.736371;
+void initSingal() {
+	sig1.gps.sig_num = 1;
+	sig1.gps.latitude = 37.346937;
+	sig1.gps.longtitude = 127.736371;
 
-	sig2.sig_num = 2;
-	sig2.latitude = 37.346868;
-	sig2.longtitude = 126.746831;
+	sig2.gps.sig_num = 2;
+	sig2.gps.latitude = 37.346868;
+	sig2.gps.longtitude = 126.746831;
 
-	sig3.sig_num = 3;
-	sig3.latitude = 37.346865;
-	sig3.longtitude = 126.736294;
+	sig3.gps.sig_num = 3;
+	sig3.gps.latitude = 37.346865;
+	sig3.gps.longtitude = 126.736294;
 
-	sig4.sig_num = 4;
-	sig4.latitude = 37.346932;
-	sig4.longtitude = 126.736286;
+	sig4.gps.sig_num = 4;
+	sig4.gps.latitude = 37.346932;
+	sig4.gps.longtitude = 126.736286;
 }
 
-float GetAngleBetweenTwoVectors(float Vec1X, float Vec1Y, float Vec2X, float Vec2Y) {
-	float v;
 
-	// 먼저 두 벡터를 단위 벡터로 만든다.
-	v = sqrt(Vec1X*Vec1X + Vec1Y*Vec1Y);
-	Vec1X /= v;
-	Vec1Y /= v;
-
-	v = sqrt(Vec2X*Vec2X + Vec2Y*Vec2Y);
-	Vec2X /= v;
-	Vec2Y /= v;
-
-	// 내적하기
-	float theta;
-	float degree;
-
-	theta = Vec1X*Vec2X + Vec2Y*Vec2Y;
-
-	theta = acos(theta);
-
-	degree = theta * (180 / 3.141592);
-
-	return degree;
-}
-
+// -------------------------- 최장거리 신호요구 mapping 으로 수정!!!! + 신호등 좌우 판별 parameter??
 // gps 매핑
 int gps_mapping(float c_latitude, float c_longtitude) {
-	float CtoI_lat;						// 차에서 교차로 중앙까지의 위도벡터
-	float CtoI_long;					// 차에서 교차로 중앙까지의 경도벡터
-	float ItoS_lat;						// 교차로 중앙에서 신호등까지의 위도벡터
-	float ItoS_long;						// 교차로 중앙에서 신호등까지의 경도벡터
-	float i_latitude, i_longtitude;		// 교차로 중앙의 위도, 경도
-	float degree;
+	double distance;						// 차에서 신호등까지의 거리
+	float temp;							// 최장거리 도출을 위한 임시 거리 변수
 	int sigNum;							// 최종 신호등 번호
 
-										// 교차로 중앙의 위도, 경도 값
-	i_latitude = (sig1.latitude + sig2.latitude + sig3.latitude + sig4.latitude) / 4;
-	i_longtitude = (sig1.longtitude + sig2.longtitude + sig3.longtitude + sig4.longtitude) / 4;
+	// 신호등 1번 - 차량 간 (거리) 제곱 
+	distance = pow((sig1.gps.latitude - c_latitude), 2.0) + pow((sig1.gps.longtitude - c_longtitude), 2.0);
 
-	// 차에서 교차로 중앙까지 위도, 경도 벡터
-	CtoI_lat = i_latitude - c_latitude;
-	CtoI_long = i_longtitude - c_longtitude;
+	// 신호등 2번 - 차량 간 (거리) 제곱 
+	temp = pow((sig2.gps.latitude - c_latitude), 2.0) + pow((sig2.gps.longtitude - c_longtitude), 2.0);
 
-	// 교차로 중앙에서 신호등1 까지의 위도, 경도벡터
-	ItoS_lat = sig1.latitude - i_latitude;
-	ItoS_long = sig1.longtitude - i_longtitude;
+	if (temp > distance)
+		distance = temp;
 
-	// 최종 각 도출 (도출과정 - 구조체 배열로 변경 가능)
-	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
+	// 신호등 3번 - 차량 간 (거리) 제곱 
+	temp = pow((sig3.gps.latitude - c_latitude), 2.0) + pow((sig3.gps.longtitude - c_longtitude), 2.0);
 
-	if (degree >= 0 || degree <= 30) {
-		sigNum = 1;
-		return sigNum;
-	}
+	if (temp > distance)
+		distance = temp;
 
-	// 교차로 중앙에서 신호등2 까지의 위도, 경도벡터
-	ItoS_lat = sig2.latitude - i_latitude;
-	ItoS_long = sig2.longtitude - i_longtitude;
+	// 신호등 4번 - 차량 간 (거리) 제곱 
+	temp = pow((sig4.gps.latitude - c_latitude), 2.0) + pow((sig4.gps.longtitude - c_longtitude), 2.0);
 
-	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
+	if (temp > distance)
+		distance = temp;
 
-	if (degree >= 0 || degree <= 30) {
-		sigNum = 2;
-		return sigNum;
-	}
-
-	// 교차로 중앙에서 신호등2 까지의 위도, 경도벡터
-	ItoS_lat = sig3.latitude - i_latitude;
-	ItoS_long = sig3.longtitude - i_longtitude;
-
-	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
-
-	if (degree >= 0 || degree <= 30) {
-		sigNum = 3;
-		return sigNum;
-	}
-
-	// 교차로 중앙에서 신호등2 까지의 위도, 경도벡터
-	ItoS_lat = sig4.latitude - i_latitude;
-	ItoS_long = sig4.longtitude - i_longtitude;
-
-	degree = GetAngleBetweenTwoVectors(CtoI_lat, CtoI_long, ItoS_lat, ItoS_long);
-
-	if (degree >= 0 || degree <= 30) {
-		sigNum = 4;
-		return sigNum;
-	}
+	return distance;
 }
 
 // 신호값 도출
