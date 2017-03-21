@@ -31,7 +31,7 @@ char sh_buff[BUFFSIZE];
 
 signal sig1, sig2, sig3, sig4;
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 	char* servIP;
 
 	// 신호등 번호 및 gps 값 초기화
@@ -54,8 +54,8 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 	/*if (pthread_create(&thID_sendCtlrData, NULL, send_CtData, NULL) < 0) {
-		perror("create error: thread for sending data\n");
-		exit(1);
+	perror("create error: thread for sending data\n");
+	exit(1);
 	}*/
 
 	while (1) {
@@ -134,24 +134,24 @@ void send_CtData(char *buf) {
 
 	st_sig.gSig.sig_num = 1;
 	st_sig.gSig.sig_value = 2;
-
+	/*
 	strcat(buff, (char *)st_sig.id);
-	strcat(buff, (char *)st_sig.gSig);
+	strcat(buff, &st_sig.gSig);
 	strcat(buff, buf);
-
+	*/
 	//st_sig 구조체 안의 Car 의 raw data를 받았으므로 Car 의 gps 데이터 기반으로 신호 값을 생성해줄 함수
 	makeSigSt(&st_sig);
 
-	st_sig.gSig = (signal *)malloc(sizeof(signal));
+	//st_sig.gSig = (signal *)malloc(sizeof(signal));
 	st_sig.gSig.sig_num = 1;
 	st_sig.gSig.sig_value = 2;
 	{
 		char *test = (char *)&st_sig;
-		
+
 	}
-			
+
 	if (sendto(sock_sendrData, (char *)buff, BUFFSIZE, 0, (struct sockaddr *)&servAddr, sizeof(servAddr)) != BUFFSIZE)
-		printf("sendto failed");	
+		printf("sendto failed");
 }
 
 void *send_Request() {
@@ -159,7 +159,7 @@ void *send_Request() {
 	int sock_sendReq;
 	struct sockaddr_in servAddr;
 	//var data
-	char *request ="0";
+	char *request = "0";
 
 	if ((sock_sendReq = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		puts("socket Failed\n");
@@ -210,7 +210,7 @@ int gps_mapping(float c_latitude, float c_longtitude) {
 	float temp;							// 최장거리 도출을 위한 임시 거리 변수
 	int sigNum;							// 최종 신호등 번호
 
-	// 신호등 1번 - 차량 간 (거리) 제곱 
+										// 신호등 1번 - 차량 간 (거리) 제곱 
 	distance = pow((sig1.gps.latitude - c_latitude), 2.0) + pow((sig1.gps.longtitude - c_longtitude), 2.0);
 
 	// 신호등 2번 - 차량 간 (거리) 제곱 
