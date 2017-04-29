@@ -44,6 +44,7 @@ public class Road extends JFrame {
 					// 테스팅용 고정 출발지/목적지 생성 (0,250) -> (1000, 250)
 					 makeCar(12, 4);
 					 makeCar(9, 1);
+					 makeCar(11, 1);
 					
 					// 차 출발지, 목적지 포인트 랜덤 생성 
 					// makeCar((int)(random*12)+1, (int)(random*12)+1);
@@ -72,7 +73,7 @@ public class Road extends JFrame {
 	
 	private void makeCar(int start, int finish) {
 		
-		cars[numbers_car] = new Car(start, finish);
+		cars[numbers_car] = new Car(start, finish, signals);
 		cars[numbers_car].start();
 		numbers_car++;
 	}
