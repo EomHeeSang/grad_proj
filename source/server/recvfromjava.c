@@ -80,7 +80,7 @@ void* recv_rData(void *p) {
 	if ((sock_recvRdata = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		puts("socket() failed");
 	//init servAddr & set servAddr
-	setsockopt(sock_recvRdata, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+	//setsockopt(sock_recvRdata, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 	memset(&servAddr, 0, sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -89,15 +89,17 @@ void* recv_rData(void *p) {
 		puts("recv data bind failed");
 
 	clntLen = sizeof(clntAddr);
+	puts("recv start");
 	while (1) {
 
-		if ((end = recvfrom(sock_recvRdata, buf, BUFFSIZE - 1, 0, (struct sockaddr*)&clntAddr, &clntLen)) < 0)
+		if ((end = recvfrom(sock_recvRdata, (void *)buf, BUFFSIZE - 1, 0, (struct sockaddr*)&clntAddr, &clntLen)) < 0)
 			printf("recvfrom failed\n");
 		buf[end] = '\0';
+		puts("recv");
 		
 		if (buf[0] != '\0') {
 			puts("call sql");
-			insert_rData(buf);
+			//insert_rData(buf);
 
 			buf[0] = '\0';
 
